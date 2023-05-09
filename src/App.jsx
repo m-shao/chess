@@ -50,15 +50,15 @@ function App() {
         let legalSpacesTemp = {}
         for (let i = 0; i < 2; i++){
             for (let j = -1; j < 2; j = j + 2){
-                // if (board[tempCoords[1]][tempCoords[0]] === "0" || board[tempCoords[1]][tempCoords[0]][0] === piece[0]){
-                //     console.log('youremom')
-                // }
-
                 while (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1 
                     && (board[tempCoords[1]][tempCoords[0]] === "0" || board[tempCoords[1]][tempCoords[0]] === piece)){ 
                     legalSpacesTemp[tempCoords] = true
                     tempCoords[i] = tempCoords[i] + j
-                    // console.log("hii")
+                }
+                if (board[tempCoords[1]][tempCoords[0]] !== undefined){
+                    if (board[tempCoords[1]][tempCoords[0]][0] !== piece[0] && board[tempCoords[1]][tempCoords[0]] !== "0"){
+                        legalSpacesTemp[tempCoords] = true
+                    }
                 }
                 tempCoords = [...coords]
             }
