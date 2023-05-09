@@ -13,14 +13,14 @@ function App() {
     const [turn, setTurn] = useState("W")
 
 
-    const [board, setBoard] = useState([["BR1","BK1","BB1","B+","B*","BB2","BK2","0"],
+    const [board, setBoard] = useState([["BR1","BK1","BB1","B+1","B*1","BB2","BK2","BR2"],
                 ["BP1","BP2","BP3","BP4","BP5","BP6","BP7","BP8"],
                 ["0","0","0","0","0","0","0","0"],
-                ["0","0","0","0","WR2","0","0","0"],
-                ["0","0","0","0","BR2","0","0","0"],
+                ["0","0","0","W*","0","0","0","0"],
+                ["0","0","0","BB1","WR2","0","0","0"],
                 ["0","0","0","0","0","0","0","0"],
                 ["WP1","WP2","WP3","WP4","WP5","WP6","WP7","WP8"],
-                ["WR1","WK1","WB1","W+1","W*1","WB2","WK2","0"]])
+                ["WR1","WK1","WR2","W+1","W*1","WB2","WK2","WR2"]])
 
 
     const changeBoard = (newVal, coords) => {
@@ -35,50 +35,91 @@ function App() {
             setSelected([...coords])
             checkLegal(piece, coords)
         } else if(selected[0] !== -1) {
-            if (legalSpaces[coords] === true){
+
+            if (legalSpaces[coords] === true && (selected[0] !== coords[0] || selected[1] !== coords[1])){
                 changeBoard(board[selected[1]][selected[0]] , coords)
                 changeBoard("0" , selected)
+                setTurn(turn === "W" ? "B" : "W")
             }
             setLegalSpaces({})
-            setTurn(turn === "W" ? "B" : "W")
             setSelected([-1])
         }
     }
 
-    const checkParalell = (piece, coords) => {
+    const checkDiagonal = (piece, coords, limit) => {
         let tempCoords = [...coords]
         let legalSpacesTemp = {}
-        for (let i = 0; i < 2; i++){
+        let limitCount = 0
+        for (let i = -1; i < 2; i = i + 2){
             for (let j = -1; j < 2; j = j + 2){
+                limitCount = 0
                 while (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1 
                     && (board[tempCoords[1]][tempCoords[0]] === "0" || board[tempCoords[1]][tempCoords[0]] === piece)){ 
                     legalSpacesTemp[tempCoords] = true
-                    tempCoords[i] = tempCoords[i] + j
+                    tempCoords[0] = tempCoords[0] + i
+                    tempCoords[1] = tempCoords[1] + j
                 }
-                if (board[tempCoords[1]][tempCoords[0]] !== undefined){
-                    if (board[tempCoords[1]][tempCoords[0]][0] !== piece[0] && board[tempCoords[1]][tempCoords[0]] !== "0"){
-                        legalSpacesTemp[tempCoords] = true
+                if (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1){
+                    if (board[tempCoords[1]][tempCoords[0]] !== undefined){
+                        if (board[tempCoords[1]][tempCoords[0]][0] !== piece[0] && board[tempCoords[1]][tempCoords[0]] !== "0"){
+                            legalSpacesTemp[tempCoords] = true
+                        }
                     }
                 }
                 tempCoords = [...coords]
             }
         }
-        setLegalSpaces(legalSpacesTemp)
+        return legalSpacesTemp
+    }
+
+    useEffect(() => {
+        console.log(legalSpaces)
+    }, [legalSpaces])
+
+    const checkParalell = (piece, coords, limit) => {
+        let tempCoords = [...coords]
+        let legalSpacesTemp = {}
+        let limitCount = 0
+        for (let i = 0; i < 2; i++){
+            for (let j = -1; j < 2; j = j + 2){
+                limitCount = 0
+                while (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1 
+                    && (board[tempCoords[1]][tempCoords[0]] === "0" || board[tempCoords[1]][tempCoords[0]] === piece)){ 
+                    legalSpacesTemp[tempCoords] = true
+                    tempCoords[i] = tempCoords[i] + j
+                }
+                if (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1){
+                    if (board[tempCoords[1]][tempCoords[0]] !== undefined){
+                        if (board[tempCoords[1]][tempCoords[0]][0] !== piece[0] && board[tempCoords[1]][tempCoords[0]] !== "0"){
+                            legalSpacesTemp[tempCoords] = true
+                        }
+                    }
+                }
+                tempCoords = [...coords]
+            }
+        }
+        return legalSpacesTemp
     }
 
     const checkLegal = (piece, coords) => {
         
         if (piece[1] === "R"){
-            checkParalell(piece,coords)
+            const legal = checkParalell(piece,coords, 10)
+            setLegalSpaces(legal)
             
         } else if (piece[1] === "K"){
             console.log("knight")
         } else if (piece[1] === "B"){
-            console.log("bishop")
+            const legal = checkDiagonal(piece,coords, 10)
+            setLegalSpaces(legal)
+            
         } else if (piece[1] === "+"){
             console.log("king")
         } else if (piece[1] === "*"){
-            console.log("queen")
+            let legal1 = checkParalell(piece,coords, 1)
+            let legal2 = checkDiagonal(piece,coords, 1)
+            setLegalSpaces({...legal1, ...legal2})
+            
         } else if (piece[1] === "P"){
             console.log("pawn")
         }
