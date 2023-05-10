@@ -16,8 +16,8 @@ function App() {
     const [board, setBoard] = useState([["BR1","BK1","BB1","B+1","B*1","BB2","BK2","BR2"],
                 ["BP1","BP2","BP3","BP4","BP5","BP6","BP7","BP8"],
                 ["0","0","0","0","0","0","0","0"],
-                ["0","W+1","0","W*1","0","0","0","0"],
-                ["0","0","0","BB1","WR2","0","0","0"],
+                ["0","0","0","W*1","0","0","0","0"],
+                ["0","B+1","0","WK1","WR2","0","0","0"],
                 ["0","0","0","0","0","0","0","0"],
                 ["WP1","WP2","WP3","WP4","WP5","WP6","WP7","WP8"],
                 ["WR1","WK1","WB2","W+1","W*1","WB2","WK2","WR2"]])
@@ -47,32 +47,21 @@ function App() {
     }
 
     const checkDiagonal = (piece, coords, limit) => {
+        limit = limit + 1
         let tempCoords = [...coords]
         let legalSpacesTemp = {}
         let limitCount = 0
-        let limitHit = false
         for (let i = -1; i < 2; i = i + 2){
             for (let j = -1; j < 2; j = j + 2){
-                limitCount = 0
                 while (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1 
-                    && (board[tempCoords[1]][tempCoords[0]] === "0" || board[tempCoords[1]][tempCoords[0]] === piece)){ 
+                    && (board[tempCoords[1]][tempCoords[0]] === "0" || board[tempCoords[1]][tempCoords[0]][0] !== piece[0] || board[tempCoords[1]][tempCoords[0]] === piece) && limitCount !== limit){ 
                     legalSpacesTemp[tempCoords] = true
-                    tempCoords[0] = tempCoords[0] + i
-                    tempCoords[1] = tempCoords[1] + j
-                    if (limitCount === limit){
-                        limitHit = true
+                    if (board[tempCoords[1]][tempCoords[0]][0] === (piece[0] === "W" ? "B" : "W")){
                         break
                     }
+                    tempCoords[0] = tempCoords[0] + i
+                    tempCoords[1] = tempCoords[1] + j
                     limitCount++
-                }
-                if (!limitHit){
-                    if (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1){
-                        if (board[tempCoords[1]][tempCoords[0]] !== undefined){
-                            if (board[tempCoords[1]][tempCoords[0]][0] !== piece[0] && board[tempCoords[1]][tempCoords[0]] !== "0"){
-                                legalSpacesTemp[tempCoords] = true
-                            }
-                        }
-                    }
                 }
                 limitCount = 0
                 tempCoords = [...coords]
@@ -81,40 +70,43 @@ function App() {
         return legalSpacesTemp
     }
 
-    useEffect(() => {
-        console.log(legalSpaces)
-    }, [legalSpaces])
-
     const checkParalell = (piece, coords, limit) => {
+        limit = limit + 1
         let tempCoords = [...coords]
         let legalSpacesTemp = {}
         let limitCount = 0
-        let limitHit = false
         for (let i = 0; i < 2; i++){
             for (let j = -1; j < 2; j = j + 2){
                 limitCount = 0
                 while (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1 
-                    && (board[tempCoords[1]][tempCoords[0]] === "0" || board[tempCoords[1]][tempCoords[0]] === piece)){ 
+                    && (board[tempCoords[1]][tempCoords[0]] === "0" || board[tempCoords[1]][tempCoords[0]][0] !== piece[0] || board[tempCoords[1]][tempCoords[0]] === piece) && limitCount !== limit){ 
                     legalSpacesTemp[tempCoords] = true
-                    tempCoords[i] = tempCoords[i] + j
-                    if (limitCount === limit){
-                        limitHit = true
+                    if (board[tempCoords[1]][tempCoords[0]][0] === (piece[0] === "W" ? "B" : "W")){
                         break
                     }
+                    tempCoords[i] = tempCoords[i] + j
                     limitCount++
-                }
-                if (!limitHit){
-                    if (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1){
-                        if (board[tempCoords[1]][tempCoords[0]] !== undefined){
-                            if (board[tempCoords[1]][tempCoords[0]][0] !== piece[0] && board[tempCoords[1]][tempCoords[0]] !== "0"){
-                                legalSpacesTemp[tempCoords] = true
-                            }
-                        }
-                    }
+                    
                 }
                     
                 limitCount = 0
                 tempCoords = [...coords]
+            }
+        }
+        return legalSpacesTemp
+    }
+
+    const checkL = (piece, coords) => {
+        let tempCoords = [...coords]
+        let legalSpacesTemp = {}
+        for (let i = -1; i < 2; i = i + 2){
+            for (let j = -1; j < 2; j = j + 2){
+                if (!(tempCoords[0] + i * 2 >= 8 && tempCoords[0] + i * 2 < 0 && tempCoords[1] + i * 2 < 0 && tempCoords[1] + i * 2 >= 8)){
+                    if (board[tempCoords[0] + i * 2][tempCoords[1] + j][0] !== piece[0] && board[tempCoords[0]  + j][tempCoords[1] + i * 2][0] !== piece[0]){
+                    legalSpacesTemp[[tempCoords[0] + i * 2, tempCoords[1] + j]] = true
+                    legalSpacesTemp[[tempCoords[0]  + j, tempCoords[1] + i * 2]] = true
+                    }
+                }
             }
         }
         return legalSpacesTemp
@@ -127,7 +119,8 @@ function App() {
             setLegalSpaces(legal)
             
         } else if (piece[1] === "K"){
-            console.log("knight")
+            const legal = checkL(piece,coords)
+            setLegalSpaces(legal)
         } else if (piece[1] === "B"){
             const legal = checkDiagonal(piece,coords, 10)
             setLegalSpaces(legal)
@@ -142,7 +135,7 @@ function App() {
             setLegalSpaces({...legal1, ...legal2})
             
         } else if (piece[1] === "P"){
-            console.log("pawn")
+            // console.log("pawn")
         }
     }
 
