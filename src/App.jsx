@@ -16,11 +16,11 @@ function App() {
     const [board, setBoard] = useState([["BR1","BK1","BB1","B+1","B*1","BB2","BK2","BR2"],
                 ["BP1","BP2","BP3","BP4","BP5","BP6","BP7","BP8"],
                 ["0","0","0","0","0","0","0","0"],
-                ["0","0","0","W*","0","0","0","0"],
+                ["0","W+1","0","W*1","0","0","0","0"],
                 ["0","0","0","BB1","WR2","0","0","0"],
                 ["0","0","0","0","0","0","0","0"],
                 ["WP1","WP2","WP3","WP4","WP5","WP6","WP7","WP8"],
-                ["WR1","WK1","WR2","W+1","W*1","WB2","WK2","WR2"]])
+                ["WR1","WK1","WB2","W+1","W*1","WB2","WK2","WR2"]])
 
 
     const changeBoard = (newVal, coords) => {
@@ -50,6 +50,7 @@ function App() {
         let tempCoords = [...coords]
         let legalSpacesTemp = {}
         let limitCount = 0
+        let limitHit = false
         for (let i = -1; i < 2; i = i + 2){
             for (let j = -1; j < 2; j = j + 2){
                 limitCount = 0
@@ -58,14 +59,22 @@ function App() {
                     legalSpacesTemp[tempCoords] = true
                     tempCoords[0] = tempCoords[0] + i
                     tempCoords[1] = tempCoords[1] + j
+                    if (limitCount === limit){
+                        limitHit = true
+                        break
+                    }
+                    limitCount++
                 }
-                if (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1){
-                    if (board[tempCoords[1]][tempCoords[0]] !== undefined){
-                        if (board[tempCoords[1]][tempCoords[0]][0] !== piece[0] && board[tempCoords[1]][tempCoords[0]] !== "0"){
-                            legalSpacesTemp[tempCoords] = true
+                if (!limitHit){
+                    if (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1){
+                        if (board[tempCoords[1]][tempCoords[0]] !== undefined){
+                            if (board[tempCoords[1]][tempCoords[0]][0] !== piece[0] && board[tempCoords[1]][tempCoords[0]] !== "0"){
+                                legalSpacesTemp[tempCoords] = true
+                            }
                         }
                     }
                 }
+                limitCount = 0
                 tempCoords = [...coords]
             }
         }
@@ -80,6 +89,7 @@ function App() {
         let tempCoords = [...coords]
         let legalSpacesTemp = {}
         let limitCount = 0
+        let limitHit = false
         for (let i = 0; i < 2; i++){
             for (let j = -1; j < 2; j = j + 2){
                 limitCount = 0
@@ -87,14 +97,23 @@ function App() {
                     && (board[tempCoords[1]][tempCoords[0]] === "0" || board[tempCoords[1]][tempCoords[0]] === piece)){ 
                     legalSpacesTemp[tempCoords] = true
                     tempCoords[i] = tempCoords[i] + j
+                    if (limitCount === limit){
+                        limitHit = true
+                        break
+                    }
+                    limitCount++
                 }
-                if (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1){
-                    if (board[tempCoords[1]][tempCoords[0]] !== undefined){
-                        if (board[tempCoords[1]][tempCoords[0]][0] !== piece[0] && board[tempCoords[1]][tempCoords[0]] !== "0"){
-                            legalSpacesTemp[tempCoords] = true
+                if (!limitHit){
+                    if (tempCoords[0] < 8 && tempCoords[1] < 8 && tempCoords[0] > -1 && tempCoords[1] > -1){
+                        if (board[tempCoords[1]][tempCoords[0]] !== undefined){
+                            if (board[tempCoords[1]][tempCoords[0]][0] !== piece[0] && board[tempCoords[1]][tempCoords[0]] !== "0"){
+                                legalSpacesTemp[tempCoords] = true
+                            }
                         }
                     }
                 }
+                    
+                limitCount = 0
                 tempCoords = [...coords]
             }
         }
@@ -114,10 +133,12 @@ function App() {
             setLegalSpaces(legal)
             
         } else if (piece[1] === "+"){
-            console.log("king")
-        } else if (piece[1] === "*"){
             let legal1 = checkParalell(piece,coords, 1)
             let legal2 = checkDiagonal(piece,coords, 1)
+            setLegalSpaces({...legal1, ...legal2})
+        } else if (piece[1] === "*"){
+            let legal1 = checkParalell(piece,coords, 10)
+            let legal2 = checkDiagonal(piece,coords, 10)
             setLegalSpaces({...legal1, ...legal2})
             
         } else if (piece[1] === "P"){
