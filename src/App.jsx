@@ -20,14 +20,14 @@ function App() {
     }
 
 
-    const [board, setBoard] = useState([["BR1","BK1","BB1","B+1","B*1","BB2","BK2","BR2"],
+    const [board, setBoard] = useState([["BR1","BK1","BB1","B*1","B+1","BB2","BK2","BR2"],
                 ["BP1","BP2","BP3","BP4","BP5","BP6","BP7","BP8"],
                 ["0","0","0","0","0","0","0","0"],
                 ["0","0","0","0","0","0","0","0"],
                 ["0","0","0","0","0","0","0","0"],
                 ["0","0","0","0","0","0","0","0"],
                 ["WP1","WP2","WP3","WP4","WP5","WP6","WP7","WP8"],
-                ["WR1","WK1","WB2","W+1","W*1","WB2","WK2","WR2"]])
+                ["WR1","WK1","WB2","W*1","W+1","WB2","WK2","WR2"]])
 
 
     const changeBoard = (newVal, coords) => {
@@ -189,14 +189,11 @@ function App() {
                     <div className='flex gap-2' key={colNum}>{
                         row.map((item, rowNum) => (
                             <div onClick={() => {handleClick(item, [rowNum, colNum])}} className={'text-gray-400 border-4 flex justify-center items-center w-20 h-20 '
-                            + ((rowNum === selected[0] && colNum === selected[1]) ? 'bg-red-400' : legalSpaces[[rowNum, colNum]] === true ? 'bg-green-300 '
-                            : ((rowNum + colNum) % 2 === 0 ? 'bg-black border-black ' : 'bg-white border-white '))} key={rowNum}>
+                            + ((rowNum === selected[0] && colNum === selected[1]) ? 'bg-red-400' : legalSpaces[[rowNum, colNum]] === true ? 'bg-green-400 '
+                            : ((rowNum + colNum) % 2 === 0 ? 'bg-neutral-300 border-neutral-300 ' : 'bg-neutral-800 border-neutral-800 '))} key={rowNum}>
                                 {item !== "0" &&
-                                <div className={' rounded-full border-4 w-12 h-12 flex justify-center items-center ' +
-                                ((rowNum + colNum) % 2 === 0 ? 'border-white ' : 'border-black ') +
-                                (item[0] === "W" ? 'bg-white' : 'bg-black')}>
-                                    {pieces[item[1]]}
-                                </div>}
+                                    <img src={pieces[item[1]]} alt="" className={"w-24 h-18 " + (item[0] === "W" ? '' : 'invert')}/>
+                                }
                             </div>
                         ))}
                     </div>
