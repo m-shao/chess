@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import pieces from './constants.js'
 
 function App() {
     const [legalSpaces, setLegalSpaces] = useState({})
@@ -11,13 +12,19 @@ function App() {
 
     const [selected, setSelected] = useState([-1])
     const [turn, setTurn] = useState("W")
+    const [pawnMoved, setPawnMoved] = useState([])
+    const changePawnMoved = (val) => {
+        let tempPawnMoved = [...pawnMoved]
+        tempPawnMoved.push(val)
+        setPawnMoved(tempPawnMoved)
+    }
 
 
     const [board, setBoard] = useState([["BR1","BK1","BB1","B+1","B*1","BB2","BK2","BR2"],
                 ["BP1","BP2","BP3","BP4","BP5","BP6","BP7","BP8"],
                 ["0","0","0","0","0","0","0","0"],
-                ["0","0","0","W*1","0","0","0","0"],
-                ["0","B+1","0","WK1","WR2","0","0","0"],
+                ["0","0","0","0","0","0","0","0"],
+                ["0","0","0","0","0","0","0","0"],
                 ["0","0","0","0","0","0","0","0"],
                 ["WP1","WP2","WP3","WP4","WP5","WP6","WP7","WP8"],
                 ["WR1","WK1","WB2","W+1","W*1","WB2","WK2","WR2"]])
@@ -37,6 +44,9 @@ function App() {
         } else if(selected[0] !== -1) {
 
             if (legalSpaces[coords] === true && (selected[0] !== coords[0] || selected[1] !== coords[1])){
+                if (board[selected[1]][selected[0]][1] === "P"){
+                    changePawnMoved(board[selected[1]][selected[0]])
+                }
                 changeBoard(board[selected[1]][selected[0]] , coords)
                 changeBoard("0" , selected)
                 setTurn(turn === "W" ? "B" : "W")
@@ -101,12 +111,43 @@ function App() {
         let legalSpacesTemp = {}
         for (let i = -1; i < 2; i = i + 2){
             for (let j = -1; j < 2; j = j + 2){
-                if (!(tempCoords[0] + i * 2 >= 8 && tempCoords[0] + i * 2 < 0 && tempCoords[1] + i * 2 < 0 && tempCoords[1] + i * 2 >= 8)){
-                    if (board[tempCoords[0] + i * 2][tempCoords[1] + j][0] !== piece[0] && board[tempCoords[0]  + j][tempCoords[1] + i * 2][0] !== piece[0]){
-                    legalSpacesTemp[[tempCoords[0] + i * 2, tempCoords[1] + j]] = true
-                    legalSpacesTemp[[tempCoords[0]  + j, tempCoords[1] + i * 2]] = true
+                if ((tempCoords[0] + i * 2 < 8 && tempCoords[0] + i * 2 >= 0 && tempCoords[1] + j >= 0 && tempCoords[1] + j < 8)){
+                    if (board[tempCoords[1] + j][tempCoords[0] + i * 2][0] !== piece[0]){
+                        legalSpacesTemp[[tempCoords[0] + i * 2, tempCoords[1] + j]] = true
+                    }
+                } if (tempCoords[0] + j < 8 && tempCoords[0] + j >=0 && tempCoords[1] + i * 2 >= 0 && tempCoords[1] + i * 2 < 8){
+
+                    if (board[tempCoords[1] + i * 2][tempCoords[0] + j][0] !== piece[0]){
+                        legalSpacesTemp[[tempCoords[0] + j, tempCoords[1] + i * 2]] = true
                     }
                 }
+            }
+        }
+        return legalSpacesTemp
+    }
+
+    const checkForward = (piece, coords) => {
+        let forward = 2
+        let direction = piece[0] === "W" ? -1 : 1
+        let tempCoords = [...coords]
+        let legalSpacesTemp = {}
+        if ([...pawnMoved].includes(piece)){
+            forward = 1
+        }
+        for (let i = 0; i < forward; i++){
+            tempCoords[1] = tempCoords[1] + direction
+            if (board[tempCoords[1]][tempCoords[0]] === "0"){
+                legalSpacesTemp[tempCoords] = true
+            }
+        }
+        if (coords[0] !== 7){
+            if(board[coords[1] + direction][coords[0] + 1][0] === (piece[0] === "W" ? "B" : "W") && coords[0] !== 7){
+                legalSpacesTemp[[coords[0] + 1, coords[1] + direction]] = true
+            } 
+        }
+        if (coords[0] !== 0){
+            if(board[coords[1] + direction][coords[0] - 1][0] === (piece[0] === "W" ? "B" : "W")){
+                legalSpacesTemp[[coords[0] - 1, coords[1] + direction]] = true
             }
         }
         return legalSpacesTemp
@@ -135,7 +176,8 @@ function App() {
             setLegalSpaces({...legal1, ...legal2})
             
         } else if (piece[1] === "P"){
-            // console.log("pawn")
+            let legal = checkForward(piece,coords)
+            setLegalSpaces({...legal})
         }
     }
 
@@ -153,7 +195,7 @@ function App() {
                                 <div className={' rounded-full border-4 w-12 h-12 flex justify-center items-center ' +
                                 ((rowNum + colNum) % 2 === 0 ? 'border-white ' : 'border-black ') +
                                 (item[0] === "W" ? 'bg-white' : 'bg-black')}>
-                                    {item[1]}
+                                    {pieces[item[1]]}
                                 </div>}
                             </div>
                         ))}
